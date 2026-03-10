@@ -2854,7 +2854,7 @@
                             }
                         </style>
 
-                        <audio id="bgaudio_elem" preload="auto">
+                        <audio id="bgaudio_elem" preload="auto" loop>
                             <source src="temirlan-yernat-alem_IdTCP9N2.mp3" type="audio/mpeg">
                         </audio>
                         <script>
@@ -2866,11 +2866,13 @@
                                     document.querySelector('.playbgmusic').style.display = 'flex';
                                 });
                                 
+                                var userInteracted = false;
                                 var playAudio = function() {
-                                    if (!au.paused) return;
+                                    if (!au.paused) return; // already playing
                                     var playPromise = au.play();
                                     if (playPromise !== undefined) {
                                         playPromise.then(function() {
+                                            userInteracted = true; // successfully played
                                             document.querySelector('.playbgmusic').style.display = 'none';
                                             document.querySelector('.stopbgmusic').style.display = 'flex';
                                         }).catch(function(error) {
@@ -2880,22 +2882,25 @@
                                 };
                                 
                                 // Attempt autoplay immediately
-                                playAudio();
+                                setTimeout(playAudio, 300);
 
-                                // Fallback: play on first user interaction (click, touch, or scroll)
-                                var userInteracted = false;
+                                // Fallback: play on first user interaction (click, touch, scroll)
                                 var interactEvent = function() {
-                                    if (userInteracted) return;
-                                    userInteracted = true;
+                                    if (userInteracted) {
+                                        // clean up event listeners once played
+                                        window.removeEventListener('click', interactEvent);
+                                        window.removeEventListener('touchstart', interactEvent);
+                                        window.removeEventListener('scroll', interactEvent);
+                                        window.removeEventListener('mousemove', interactEvent);
+                                        return;
+                                    }
                                     playAudio();
-                                    document.removeEventListener('click', interactEvent);
-                                    document.removeEventListener('touchstart', interactEvent);
-                                    document.removeEventListener('scroll', interactEvent);
                                 };
                                 
-                                document.addEventListener('click', interactEvent);
-                                document.addEventListener('touchstart', interactEvent);
-                                document.addEventListener('scroll', interactEvent);
+                                window.addEventListener('click', interactEvent);
+                                window.addEventListener('touchstart', interactEvent);
+                                window.addEventListener('scroll', interactEvent);
+                                window.addEventListener('mousemove', interactEvent);
                             });
                         </script>
                     </div>
