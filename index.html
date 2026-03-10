@@ -2865,6 +2865,37 @@
                                     document.querySelector('.stopbgmusic').style.display = 'none';
                                     document.querySelector('.playbgmusic').style.display = 'flex';
                                 });
+                                
+                                var playAudio = function() {
+                                    if (!au.paused) return;
+                                    var playPromise = au.play();
+                                    if (playPromise !== undefined) {
+                                        playPromise.then(function() {
+                                            document.querySelector('.playbgmusic').style.display = 'none';
+                                            document.querySelector('.stopbgmusic').style.display = 'flex';
+                                        }).catch(function(error) {
+                                            console.log("Autoplay prevented:", error);
+                                        });
+                                    }
+                                };
+                                
+                                // Attempt autoplay immediately
+                                playAudio();
+
+                                // Fallback: play on first user interaction (click, touch, or scroll)
+                                var userInteracted = false;
+                                var interactEvent = function() {
+                                    if (userInteracted) return;
+                                    userInteracted = true;
+                                    playAudio();
+                                    document.removeEventListener('click', interactEvent);
+                                    document.removeEventListener('touchstart', interactEvent);
+                                    document.removeEventListener('scroll', interactEvent);
+                                };
+                                
+                                document.addEventListener('click', interactEvent);
+                                document.addEventListener('touchstart', interactEvent);
+                                document.addEventListener('scroll', interactEvent);
                             });
                         </script>
                     </div>
